@@ -8,15 +8,13 @@ package gui;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
@@ -25,21 +23,41 @@ import javax.swing.JPanel;
  */
 public class ImagePanel extends JPanel {
 
-    private Point pnt;
+    private BufferedImage img;
+    private ArrayList<Point> points;
+    private ArrayList<Color> colors;
 
     public ImagePanel() {
-        pnt = null;
+        points = new ArrayList<>();
+        colors = new ArrayList<>();
+        for (int i = 0; i < 25; i++){
+            colors.add(new Color((int)(Math.random() * 0x1000000)));
+        }
+        try {
+            img = ImageIO.read(new File("C:\\Users\\Daan\\Google Drive\\ICS proftaak\\ziekelijk mooie kaart.png"));
+        } catch (IOException ex) {
+            Logger.getLogger(ImagePanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    public void setPoint(Point p) {
-        pnt = p;
+    public void setPoints(ArrayList<Point> p) {
+        points = p;
         this.repaint();
+    }
+    
+    public Color getColor(int index){
+        return colors.get(index);
     }
 
     @Override
     public void paintComponent(Graphics g) {
         super.repaint();
-        g.setColor(Color.BLUE);
-        g.fillOval(pnt.x - 5, pnt.y - 5, 10, 10);
+        g.drawImage(img, 0, 0, null);
+        int i = 0;
+        for (Point p : points){
+            g.setColor(colors.get(i));
+            g.fillOval(p.x - 5, p.y - 5, 10, 10);
+            i++;
+        }
     }
 }

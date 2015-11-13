@@ -7,16 +7,22 @@ package gui;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.List;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import oauth.RequestsManager;
+import position.PersonHistory;
+import position.PositionManager;
 
 /**
  *
@@ -28,10 +34,19 @@ public class CiscoTracker extends javax.swing.JFrame {
      * Creates new form CiscoTracker
      */
     private ImagePanel p;
+    private ArrayList<String> accessTokens;
+    private RequestsManager m;
+    private PositionManager pm;
+    private JPanel namePanel;
 
     public CiscoTracker() {
-        this.addImage();
+        //this.addImage();
         this.addImagePanel();
+        this.addNamePanel();
+        this.accessTokens = new ArrayList<>();
+        accessTokens.add("0729eee4779553fc6365465308c2569c");
+        this.m = new RequestsManager();
+        this.pm = new PositionManager();
         initComponents();
     }
 
@@ -45,7 +60,7 @@ public class CiscoTracker extends javax.swing.JFrame {
     private void initComponents() {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(1000, 500));
+        setPreferredSize(new java.awt.Dimension(1200, 500));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -61,43 +76,56 @@ public class CiscoTracker extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(CiscoTracker.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CiscoTracker.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CiscoTracker.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(CiscoTracker.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new CiscoTracker().setVisible(true);
-            }
-        });
-    }
-
     public ImagePanel getImagePanel() {
         return p;
+    }
+    
+    public ArrayList<PersonHistory> getHistory(){
+        ArrayList<PersonHistory> histories = new ArrayList<>();
+        for (String s : accessTokens){
+            try {
+                histories.add(new PersonHistory(m.getName(s), m.getHistory(s)));
+            } catch (IOException ex) {
+                Logger.getLogger(CiscoTracker.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        return histories;
+    }
+    
+    public void DrawHistory(ArrayList<PersonHistory> histories){
+        
+        for (int i = 0; i < 10; i++){
+            ArrayList<Point> pointsToDraw = new ArrayList<>();
+            int j = 0;
+            namePanel.removeAll();
+            for (PersonHistory hist : histories) {
+                double x = hist.getMovementHistory().get(i).getX();
+                double y = hist.getMovementHistory().get(i).getY();
+                pointsToDraw.add(pm.translateToImageXY(x, y));
+                
+                this.addNamesToPanel(hist.getName() + ", " + hist.getMovementHistory().get(i).getLocatedDateTime(), j * 20, p.getColor(j));
+                j++;
+            }
+            
+            p.setPoints(pointsToDraw);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(CiscoTracker.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        this.DrawHistory(this.getHistory());
+    }
+    
+    private void addNamesToPanel(String text, int posY, Color c){
+        JLabel lbl = new JLabel();
+        lbl.setText(text);
+        lbl.setLocation(0, posY);
+        lbl.setForeground(c);
+        
+        namePanel.add(lbl);
+        namePanel.revalidate();
     }
 
     private void addImagePanel() {
@@ -106,21 +134,13 @@ public class CiscoTracker extends javax.swing.JFrame {
         p.setBackground(Color.WHITE);
         add(p);
     }
-
-    private void addImage() {
-        JLabel mapLabel = null;
-        try {
-            BufferedImage map = ImageIO.read(new File("C:\\Users\\Daan\\Google Drive\\ICS proftaak\\ziekelijk mooie kaart.png"));
-            mapLabel = new JLabel(new ImageIcon(map));
-            mapLabel.setBounds(new Rectangle(800, 330));
-        } catch (IOException ex) {
-            Logger.getLogger(CiscoTracker.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        add(mapLabel);
-
+    
+    private void addNamePanel(){
+        namePanel = new JPanel();
+        namePanel.setLocation(new Point(800,20));
+        namePanel.setSize(400, 500);
+        this.add(namePanel);
     }
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables

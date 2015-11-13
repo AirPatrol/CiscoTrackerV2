@@ -99,6 +99,6 @@ public class PositionManager {
             
         }
         
-        return null;
+        return fixedPoint;
     }
 }

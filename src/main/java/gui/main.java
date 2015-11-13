@@ -29,9 +29,10 @@ public class main {
         
         CiscoTracker t = new CiscoTracker();
         t.setVisible(true); 
-        t.getImagePanel().setPoint(p.translateToImageXY(382.45, 332.23));
+        t.DrawHistory(t.getHistory());
+        //t.getImagePanel().setPoint(p.translateToImageXY(382.45, 332.23));
         
-        System.out.println(m.getName("243385e9572c147486753e7154f8fb46"));
-        System.out.println(m.getHistory("243385e9572c147486753e7154f8fb46"));        
+        //System.out.println(m.getName("243385e9572c147486753e7154f8fb46"));
+        //System.out.println(m.getHistory("243385e9572c147486753e7154f8fb46"));        
     }
 }
