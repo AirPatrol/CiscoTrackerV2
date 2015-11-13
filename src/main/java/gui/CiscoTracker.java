@@ -10,16 +10,20 @@ import java.awt.Graphics;
 import java.awt.List;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import oauth.RequestsManager;
 import position.PersonHistory;
 import position.PositionManager;
@@ -38,13 +42,15 @@ public class CiscoTracker extends javax.swing.JFrame {
     private RequestsManager m;
     private PositionManager pm;
     private JPanel namePanel;
+    private JTextField tfAddToken;
 
     public CiscoTracker() {
         //this.addImage();
         this.addImagePanel();
         this.addNamePanel();
+        this.addTfAddToken();
         this.accessTokens = new ArrayList<>();
-        accessTokens.add("0729eee4779553fc6365465308c2569c");
+        accessTokens.add("a28abe9bcc68acb5d3e2acb1695b7d81");
         this.m = new RequestsManager();
         this.pm = new PositionManager();
         initComponents();
@@ -79,23 +85,23 @@ public class CiscoTracker extends javax.swing.JFrame {
     public ImagePanel getImagePanel() {
         return p;
     }
-    
-    public ArrayList<PersonHistory> getHistory(){
+
+    public ArrayList<PersonHistory> getHistory() {
         ArrayList<PersonHistory> histories = new ArrayList<>();
-        for (String s : accessTokens){
+        for (String s : accessTokens) {
             try {
                 histories.add(new PersonHistory(m.getName(s), m.getHistory(s)));
             } catch (IOException ex) {
                 Logger.getLogger(CiscoTracker.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
+
         return histories;
     }
-    
-    public void DrawHistory(ArrayList<PersonHistory> histories){
-        
-        for (int i = 0; i < 10; i++){
+
+    public void DrawHistory(ArrayList<PersonHistory> histories) {
+
+        for (int i = 0; i < 10; i++) {
             ArrayList<Point> pointsToDraw = new ArrayList<>();
             int j = 0;
             namePanel.removeAll();
@@ -103,11 +109,11 @@ public class CiscoTracker extends javax.swing.JFrame {
                 double x = hist.getMovementHistory().get(i).getX();
                 double y = hist.getMovementHistory().get(i).getY();
                 pointsToDraw.add(pm.translateToImageXY(x, y));
-                
+
                 this.addNamesToPanel(hist.getName() + ", " + hist.getMovementHistory().get(i).getLocatedDateTime(), j * 20, p.getColor(j));
                 j++;
             }
-            
+
             p.setPoints(pointsToDraw);
             try {
                 Thread.sleep(1000);
@@ -117,13 +123,13 @@ public class CiscoTracker extends javax.swing.JFrame {
         }
         this.DrawHistory(this.getHistory());
     }
-    
-    private void addNamesToPanel(String text, int posY, Color c){
+
+    private void addNamesToPanel(String text, int posY, Color c) {
         JLabel lbl = new JLabel();
         lbl.setText(text);
         lbl.setLocation(0, posY);
         lbl.setForeground(c);
-        
+
         namePanel.add(lbl);
         namePanel.revalidate();
     }
@@ -134,12 +140,29 @@ public class CiscoTracker extends javax.swing.JFrame {
         p.setBackground(Color.WHITE);
         add(p);
     }
-    
-    private void addNamePanel(){
+
+    private void addNamePanel() {
         namePanel = new JPanel();
-        namePanel.setLocation(new Point(800,20));
+        namePanel.setLocation(new Point(800, 20));
         namePanel.setSize(400, 500);
         this.add(namePanel);
+    }
+
+    private void addTfAddToken() {
+        tfAddToken = new JTextField(10);
+        tfAddToken.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String newToken = tfAddToken.getText();
+                tfAddToken.setText("");
+                if (newToken.length() == 32) {
+                    accessTokens.add(newToken);
+                }
+            }
+        });
+        tfAddToken.setLocation(new Point(0, 340));
+        tfAddToken.setSize(225, 25);
+        this.add(tfAddToken);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
